@@ -188,13 +188,8 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   align-items: stretch;
   min-height: 220px;
 
-  /* ЗАМІНІТЬ АБО ДОДАЙТЕ ЦІ РЯДКИ: */
   padding: 14px 10px 12px; /* видаліть цей старий рядок */
-  padding-top: 14px;
-  padding-left: 10px;
-  padding-right: 10px;
-  /* 30px — це фіксований відступ + динамічний відступ для безрамкових екранів */
-  padding-bottom: calc(50px + env(safe-area-inset-bottom)); 
+  margin-bottom: calc(50px + env(safe-area-inset-bottom));
 }
 .piano {
   position: relative; user-select: none;
@@ -367,22 +362,83 @@ function getAudio() {
 function playNote(freq) {
   const ctx = getAudio();
   const t = ctx.currentTime;
-  const dur = 1.6;
+  const dur = 3.4; // Максимально довгий сустейн для розкриття басового шлейфу
 
+  // 1. ГОЛОВНИЙ ВУЗОЛ ГУЧНОСТІ (Пружний перкусійний удар)
   const masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(0.38, t);
+  masterGain.gain.setValueAtTime(0, t);
+  masterGain.gain.linearRampToValueAtTime(0.42, t + 0.010); // Чіткий дотик фетрового молоточка
+  masterGain.gain.exponentialRampToValueAtTime(0.15, t + 0.20); // Плавний перехід у сустейн
   masterGain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+  // 2. СТУДІЙНИЙ ЕКВАЛАЙЗЕР ДЛЯ БАСІВ ТА ДЗВІНКОСТІ
+  // Піднімаємо фундаментальний бас, щоб звук був масивним
+  const lowShelf = ctx.createBiquadFilter();
+  lowShelf.type = 'lowshelf';
+  lowShelf.frequency.value = 180;
+  lowShelf.gain.value = 5.5; 
+
+  // Професійний поличний фільтр високих частот (High-Shelf)
+  // Замість глухого Lowpass він акуратно підкреслює "залізний" рокіт та дзвінкість струни
+  const highShelf = ctx.createBiquadFilter();
+  highShelf.type = 'highshelf';
+  highShelf.frequency.value = 2200;
+  highShelf.gain.value = 3.0; // Додаємо соковитого металевого блиску
+
+  // З'єднуємо ланцюг: EQ -> Master -> Вихід
+  highShelf.connect(lowShelf);
+  lowShelf.connect(masterGain);
   masterGain.connect(ctx.destination);
 
-  [[freq, 'sine', 0.8], [freq*2, 'triangle', 0.15], [freq*4, 'sine', 0.04]].forEach(([f, type, vol]) => {
+  // 3. РЕЗОНАНС ЧАВУННОЇ РАМИ (Акустичний глибокий "гуп" деки)
+  const bodyThump = ctx.createOscillator();
+  const thumpGain = ctx.createGain();
+  bodyThump.type = 'sine';
+  bodyThump.frequency.setValueAtTime(freq * 0.5, t); // Суб-бас під нотою
+  thumpGain.gain.setValueAtTime(0.18, t);
+  thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08); 
+  bodyThump.connect(thumpGain); thumpGain.connect(highShelf);
+  bodyThump.start(t); bodyThump.stop(t + 0.1);
+
+  // =================================================================
+  // СТВОРЕННЯ ДЗВІНКОЇ ХВИЛІ РОЯЛЯ (МАТРИЦЯ РОКІТЛИВИХ ГАРМОНІК)
+  // =================================================================
+  const realCoeffs = new Float32Array(13); 
+  const imagCoeffs = new Float32Array(13); 
+
+  // Нова збалансована акустична формула:
+  realCoeffs[1] = 1.40; // mult: 1 - Потужне масивне тіло баса
+  realCoeffs[2] = 0.80; // mult: 2 - Перша октава (фундамент об'єму)
+  realCoeffs[3] = 0.25; // mult: 3 - Насичена квінта
+  realCoeffs[4] = 0.35; // mult: 4 - Друга октава (кришталевий тон)
+  realCoeffs[6] = 0.08; // mult: 6 - Обертон забарвлення деки
+  realCoeffs[7] = 0.06; // mult: 7 - Сріблястий негармонічний дзвін
+  realCoeffs[8] = 0.04; // mult: 8 - Верхній блиск струни
+  realCoeffs[11] = 0.02;// mult: 11 - Той самий жорсткий металевий "рик" концертного Steinway
+
+  const pianoWave = ctx.createPeriodicWave(realCoeffs, imagCoeffs);
+
+  // 4. ТРИСТРУННИЙ ХОР (Об'ємний акустичний унісон)
+  const strings = [
+    { detune: -2.0, vol: 0.30 }, // Ліва струна
+    { detune: 0.0,  vol: 0.45 }, // Середня струна
+    { detune: 2.0,  vol: 0.30 }  // Права струна
+  ];
+
+  strings.forEach(s => {
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
-    osc.type = type;
-    osc.frequency.value = f;
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur * (f === freq ? 1 : 0.5));
+    
+    osc.setPeriodicWave(pianoWave);
+    osc.frequency.value = freq;
+    osc.detune.value = s.detune;
+
+    g.gain.setValueAtTime(s.vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
     osc.connect(g);
-    g.connect(masterGain);
+    g.connect(highShelf); // Пускаємо через наш новий еквалайзер
+    
     osc.start(t);
     osc.stop(t + dur);
   });
