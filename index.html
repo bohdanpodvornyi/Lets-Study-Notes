@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Вивчення нот</title>
+<title>Let's study notes!</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -78,18 +78,6 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
 
 .btn-grid { display: flex; flex-direction: column; gap: 12px; }
 
-.time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.time-btn {
-  padding: 13px 6px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border); background: var(--bg);
-  color: var(--text); font-size: 13px; font-weight: 600;
-  cursor: pointer; text-align: center;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.1s;
-}
-.time-btn:hover { background: var(--bg2); }
-.time-btn.selected { background: var(--black); color: var(--white); border-color: var(--black); }
-
 .back-btn {
   width: auto; padding: 8px 16px; border-radius: 999px;
   border: 1.5px solid var(--border); background: var(--bg);
@@ -100,8 +88,50 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
 }
 .back-btn:hover { background: var(--bg2); }
 
-/* History */
-.history-section { margin-top: 32px; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+/* Контейнер для нового повзунка швидкості */
+.slider-container {
+  background: var(--bg);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  margin-bottom: 20px;
+}
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.slider-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.slider-value { font-size: 16px; font-weight: 800; color: var(--black); background: var(--bg2); padding: 4px 10px; border-radius: 6px; }
+
+.modern-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+  outline: none;
+}
+.modern-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--black);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.modern-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+
+/* History - Виправлена ізольована прокрутка */
+.history-section { 
+  margin-top: 24px; 
+  display: flex; 
+  flex-direction: column; 
+  height: 260px; /* Фіксуємо точну висоту для активації скролу */
+  flex-shrink: 0; 
+}
 .section-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--text3); margin-bottom: 12px;
@@ -111,7 +141,14 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   text-align: center; border: 1.5px dashed var(--border);
   border-radius: var(--radius-sm);
 }
-.history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
+.history-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  overflow-y: auto; /* Дозволяємо скролити список */
+  max-height: 100%; 
+  padding-right: 4px;
+}
 .history-item {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 16px; border: 1.5px solid var(--border2);
@@ -119,6 +156,7 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
 }
 .history-item-left { color: var(--text2); line-height: 1.6; }
 .history-item-left strong { color: var(--text); font-weight: 600; font-size: 14px; }
+.history-item-left span.speed-tag { font-size: 13px; color: var(--text); font-weight: 500; margin-left: 6px; }
 .history-score { font-size: 18px; font-weight: 800; color: var(--text); white-space: nowrap; margin-left: 16px; }
 
 /* Game screen */
@@ -132,14 +170,22 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   flex-direction: column;
 }
 #screen-game.active {
-  display: flex; /* Вмикаємо flex лише коли екран активний, щоб уникнути багів специфічності */
+  display: flex;
 }
 
 .game-header {
   display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex: 0 0 auto;
 }
 .game-btns { display: flex; gap: 6px; }
-.game-counter { margin-left: auto; font-size: 15px; font-weight: 700; white-space: nowrap; }
+
+.game-counter { 
+  margin-left: auto; 
+  font-size: 22px; 
+  font-weight: 800; 
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums; 
+  letter-spacing: -0.5px;
+}
 
 .btn-sm {
   padding: 8px 14px; border-radius: 999px;
@@ -162,10 +208,10 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
 }
 
 /* Trial time selector */
-.trial-time-wrap { margin-bottom: 10px; flex: 0 0 auto; }
+.trial-time-wrap { margin-bottom: 14px; flex: 0 0 auto; background: var(--bg); padding: 12px; border-radius: var(--radius); border: 1.5px solid var(--border2); }
 .trial-time-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--text3); margin-bottom: 6px;
+  letter-spacing: 0.08em; color: var(--text3); margin-bottom: 8px;
 }
 
 /* Staff */
@@ -173,7 +219,7 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   background: var(--bg); border: 1.5px solid var(--border2);
   border-radius: var(--radius); margin-bottom: 12px;
   display: flex; align-items: center; justify-content: center;
-  flex: 3; min-height: 250px; max-height: 400px; padding: 10px 8px;
+  flex: 3; min-height: 160px; max-height: 400px; padding: 10px 8px;
   overflow: visible;
 }
 #staff-svg { width: 100%; max-width: 500px; height: auto; display: block; overflow: visible; }
@@ -186,9 +232,8 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   flex: 2; 
   display: flex;
   align-items: stretch;
-  min-height: 220px;
-
-  padding: 14px 10px 12px; /* видаліть цей старий рядок */
+  min-height: 180px;
+  padding: 14px 10px 12px;
   margin-bottom: calc(50px + env(safe-area-inset-bottom));
 }
 .piano {
@@ -202,7 +247,7 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;
   background: #ffffff; cursor: pointer;
   display: flex; align-items: flex-end; justify-content: center;
-  padding-bottom: 20px; font-size: 13px; font-weight: 700; color: #555;
+  padding-bottom: 20px; font-size: 13px; font-weight: 500; color: #000;
   transition: background 0.06s; z-index: 1;
   touch-action: none;
   height: 100%;
@@ -228,18 +273,18 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
 @media (max-width: 400px) {
   h1 { font-size: 26px; }
   .btn.large { padding: 18px 16px; font-size: 15px; }
-  .time-grid { grid-template-columns: repeat(4, 1fr); }
 }
 </style>
 </head>
 <body>
 
 <div id="screen-menu" class="screen active">
-  <h1>Вивчення нот</h1>
+  <h1>Let's study notes!</h1>
+  <p class="subtitle">By Bohdan Podvornyi</p>
   <p class="subtitle">Інтерактивне тренування читання нот з фортепіанним акомпанементом</p>
-  <button class="btn primary" style="font-size:17px; padding:18px 20px;" onclick="App.go('screen-mode')">Продовжити →</button>
+  <button class="btn primary" style="font-size:17px; padding:18px 20px;" onclick="App.go('screen-mode')">Почати →</button>
   <div class="history-section">
-    <div class="section-label">Історія тестів</div>
+    <div class="section-label">Історія тестів (останні 10)</div>
     <div id="history-list"></div>
   </div>
 </div>
@@ -287,7 +332,16 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   <button class="back-btn" onclick="App.go('screen-octave')">← Назад</button>
   <h2>Час на ноту</h2>
   <p class="subtitle">Оберіть ліміт часу для кожної відповіді в іспиті</p>
-  <div class="time-grid" id="time-buttons-exam"></div>
+  
+  <div class="slider-container">
+    <div class="slider-header">
+      <span class="slider-title">Тривалість таймера</span>
+      <span id="exam-slider-value" class="slider-value">1.00 с</span>
+    </div>
+    <input type="range" id="exam-time-slider" class="modern-slider" min="0.25" max="2.0" step="0.25" value="1.0">
+  </div>
+  
+  <button class="btn primary" style="margin-top: 10px;" onclick="App.confirmExamTime()">Почати іспит →</button>
 </div>
 
 <div id="screen-game" class="screen">
@@ -304,8 +358,11 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
   </div>
 
   <div id="trial-time-wrap" class="trial-time-wrap" style="display:none;">
-    <div class="trial-time-label">Час на ноту</div>
-    <div class="time-grid" id="time-buttons-trial"></div>
+    <div class="slider-header" style="margin-bottom: 6px;">
+      <span class="trial-time-label" style="margin-bottom: 0;">Час на ноту</span>
+      <span id="trial-slider-value" style="font-size: 13px; font-weight: 700; color: var(--text2);">1.00 с</span>
+    </div>
+    <input type="range" id="trial-time-slider" class="modern-slider" min="0.25" max="2.0" step="0.25" value="1.0">
   </div>
 
   <div class="staff-container">
@@ -345,8 +402,6 @@ const OCTAVE_DEFS = {
   ]
 };
 
-const TIME_OPTIONS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
-
 // =============================================
 // WEB AUDIO ENGINE
 // =============================================
@@ -362,67 +417,54 @@ function getAudio() {
 function playNote(freq) {
   const ctx = getAudio();
   const t = ctx.currentTime;
-  const dur = 3.4; // Максимально довгий сустейн для розкриття басового шлейфу
+  const dur = 3.4; 
 
-  // 1. ГОЛОВНИЙ ВУЗОЛ ГУЧНОСТІ (Пружний перкусійний удар)
   const masterGain = ctx.createGain();
   masterGain.gain.setValueAtTime(0, t);
-  masterGain.gain.linearRampToValueAtTime(0.42, t + 0.010); // Чіткий дотик фетрового молоточка
-  masterGain.gain.exponentialRampToValueAtTime(0.15, t + 0.20); // Плавний перехід у сустейн
+  masterGain.gain.linearRampToValueAtTime(0.42, t + 0.010); 
+  masterGain.gain.exponentialRampToValueAtTime(0.15, t + 0.20); 
   masterGain.gain.exponentialRampToValueAtTime(0.001, t + dur);
 
-  // 2. СТУДІЙНИЙ ЕКВАЛАЙЗЕР ДЛЯ БАСІВ ТА ДЗВІНКОСТІ
-  // Піднімаємо фундаментальний бас, щоб звук був масивним
   const lowShelf = ctx.createBiquadFilter();
   lowShelf.type = 'lowshelf';
-  lowShelf.frequency.value = 180;
-  lowShelf.gain.value = 5.5; 
+  lowShelf.frequency.value = 160;
+  lowShelf.gain.value = 5.0; 
 
-  // Професійний поличний фільтр високих частот (High-Shelf)
-  // Замість глухого Lowpass він акуратно підкреслює "залізний" рокіт та дзвінкість струни
   const highShelf = ctx.createBiquadFilter();
   highShelf.type = 'highshelf';
-  highShelf.frequency.value = 2200;
-  highShelf.gain.value = 3.0; // Додаємо соковитого металевого блиску
+  highShelf.frequency.value = 1800; 
+  highShelf.gain.value = 8.5; 
 
-  // З'єднуємо ланцюг: EQ -> Master -> Вихід
   highShelf.connect(lowShelf);
   lowShelf.connect(masterGain);
   masterGain.connect(ctx.destination);
 
-  // 3. РЕЗОНАНС ЧАВУННОЇ РАМИ (Акустичний глибокий "гуп" деки)
   const bodyThump = ctx.createOscillator();
   const thumpGain = ctx.createGain();
   bodyThump.type = 'sine';
-  bodyThump.frequency.setValueAtTime(freq * 0.5, t); // Суб-бас під нотою
-  thumpGain.gain.setValueAtTime(0.18, t);
-  thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08); 
+  bodyThump.frequency.setValueAtTime(freq * 0.5, t); 
+  thumpGain.gain.setValueAtTime(0.15, t);
+  thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06); 
   bodyThump.connect(thumpGain); thumpGain.connect(highShelf);
-  bodyThump.start(t); bodyThump.stop(t + 0.1);
+  bodyThump.start(t); bodyThump.stop(t + 0.08);
 
-  // =================================================================
-  // СТВОРЕННЯ ДЗВІНКОЇ ХВИЛІ РОЯЛЯ (МАТРИЦЯ РОКІТЛИВИХ ГАРМОНІК)
-  // =================================================================
   const realCoeffs = new Float32Array(13); 
   const imagCoeffs = new Float32Array(13); 
 
-  // Нова збалансована акустична формула:
-  realCoeffs[1] = 1.40; // mult: 1 - Потужне масивне тіло баса
-  realCoeffs[2] = 0.80; // mult: 2 - Перша октава (фундамент об'єму)
-  realCoeffs[3] = 0.25; // mult: 3 - Насичена квінта
-  realCoeffs[4] = 0.35; // mult: 4 - Друга октава (кришталевий тон)
-  realCoeffs[6] = 0.08; // mult: 6 - Обертон забарвлення деки
-  realCoeffs[7] = 0.06; // mult: 7 - Сріблястий негармонічний дзвін
-  realCoeffs[8] = 0.04; // mult: 8 - Верхній блиск струни
-  realCoeffs[11] = 0.02;// mult: 11 - Той самий жорсткий металевий "рик" концертного Steinway
+  realCoeffs[1] = 1.30; 
+  realCoeffs[2] = 0.85; 
+  realCoeffs[3] = 0.12; 
+  realCoeffs[4] = 0.55; 
+  realCoeffs[6] = 0.10; 
+  realCoeffs[8] = 0.12; 
+  realCoeffs[12] = 0.06;
 
   const pianoWave = ctx.createPeriodicWave(realCoeffs, imagCoeffs);
 
-  // 4. ТРИСТРУННИЙ ХОР (Об'ємний акустичний унісон)
   const strings = [
-    { detune: -2.0, vol: 0.30 }, // Ліва струна
-    { detune: 0.0,  vol: 0.45 }, // Середня струна
-    { detune: 2.0,  vol: 0.30 }  // Права струна
+    { detune: -1.8, vol: 0.32 }, 
+    { detune: 0.0,  vol: 0.46 }, 
+    { detune: 1.8,  vol: 0.32 }  
   ];
 
   strings.forEach(s => {
@@ -437,7 +479,7 @@ function playNote(freq) {
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
 
     osc.connect(g);
-    g.connect(highShelf); // Пускаємо через наш новий еквалайзер
+    g.connect(highShelf);
     
     osc.start(t);
     osc.stop(t + dur);
@@ -621,33 +663,36 @@ const App = {
   _selectOctave(o) {
     this.octave = o;
     if (this.mode === 'exam') {
-      this._buildTimeBtns('time-buttons-exam', false);
+      // Ініціалізуємо повзунок екрана вибору часу
+      const slider = document.getElementById('exam-time-slider');
+      slider.value = this.timeSec;
+      document.getElementById('exam-slider-value').textContent = parseFloat(this.timeSec).toFixed(2) + ' с';
       this.go('screen-time');
     } else {
       this._startGame();
     }
   },
 
-  _buildTimeBtns(containerId, inline) {
-    const wrap = document.getElementById(containerId);
-    wrap.innerHTML = '';
-    TIME_OPTIONS.forEach(t => {
-      const b = document.createElement('button');
-      b.className = 'time-btn' + (Math.abs(t - this.timeSec) < 0.01 ? ' selected' : '');
-      b.textContent = (t % 1 === 0 ? t.toFixed(1) : t.toString()) + ' с';
-      b.onclick = () => {
-        this.timeSec = t;
-        wrap.querySelectorAll('.time-btn').forEach(x => x.classList.remove('selected'));
-        b.classList.add('selected');
-        if (!inline) {
-          this._startGame();
-        } else {
-          this._cancelTimer();
-          this._startTimer();
-        }
-      };
-      wrap.appendChild(b);
-    });
+  confirmExamTime() {
+    this._startGame();
+  },
+
+  _initSliders() {
+    // Налаштування повзунка для екрана вибору часу іспиту
+    const examSlider = document.getElementById('exam-time-slider');
+    examSlider.oninput = (e) => {
+      this.timeSec = parseFloat(e.target.value);
+      document.getElementById('exam-slider-value').textContent = this.timeSec.toFixed(2) + ' с';
+    };
+
+    // Налаштування повзунка всередині ігрового процесу (для пробного режиму)
+    const trialSlider = document.getElementById('trial-time-slider');
+    trialSlider.oninput = (e) => {
+      this.timeSec = parseFloat(e.target.value);
+      document.getElementById('trial-slider-value').textContent = this.timeSec.toFixed(2) + ' с';
+      this._cancelTimer();
+      this._startTimer();
+    };
   },
 
   _startGame() {
@@ -658,7 +703,9 @@ const App = {
     const trialWrap = document.getElementById('trial-time-wrap');
     if (this.mode === 'trial') {
       trialWrap.style.display = 'block';
-      this._buildTimeBtns('time-buttons-trial', true);
+      const trialSlider = document.getElementById('trial-time-slider');
+      trialSlider.value = this.timeSec;
+      document.getElementById('trial-slider-value').textContent = parseFloat(this.timeSec).toFixed(2) + ' с';
     } else {
       trialWrap.style.display = 'none';
     }
@@ -793,7 +840,8 @@ const App = {
       clef: this.clef === 'treble' ? 'Скрипічний' : 'Басовий',
       octave: this.octave.name,
       correct: this.correct,
-      total: this.total
+      total: this.total,
+      timeSec: this.timeSec 
     });
     localStorage.setItem('noteResults', JSON.stringify(list));
   },
@@ -805,18 +853,27 @@ const App = {
       wrap.innerHTML = '<div class="history-empty">Історія тестів порожня</div>';
       return;
     }
-    const items = [...list].reverse().map(r => `
+    
+    // Беремо лише останні 10 результатів з історії
+    const lastTenResults = [...list].reverse().slice(0, 10);
+    
+    const items = lastTenResults.map(r => {
+      const speedText = r.timeSec ? `<span class="speed-tag">⏱ ${parseFloat(r.timeSec).toFixed(2)} с</span>` : '';
+      return `
       <div class="history-item">
         <div class="history-item-left">
-          <strong>${r.clef} ключ · ${r.octave}</strong><br>
+          <strong>${r.clef} ключ · ${r.octave} ·</strong>${speedText}<br>
           ${r.date}
         </div>
         <div class="history-score">${r.correct}/${r.total}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     wrap.innerHTML = `<div class="history-list">${items}</div>`;
   }
 };
 
+// Ініціалізація слухачів повзунків після завантаження
+App._initSliders();
 App._renderHistory();
 </script>
 </body>
