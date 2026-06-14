@@ -181,13 +181,20 @@ h2 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
 /* Piano */
 .piano-outer {
   background: #1c1c1c; border-radius: var(--radius);
-  padding: 14px 10px 12px;
   border: 1.5px solid #111;
   margin-top: auto;
   flex: 2; 
   display: flex;
   align-items: stretch;
   min-height: 220px;
+
+  /* ЗАМІНІТЬ АБО ДОДАЙТЕ ЦІ РЯДКИ: */
+  padding: 14px 10px 12px; /* видаліть цей старий рядок */
+  padding-top: 14px;
+  padding-left: 10px;
+  padding-right: 10px;
+  /* 30px — це фіксований відступ + динамічний відступ для безрамкових екранів */
+  padding-bottom: calc(30px + env(safe-area-inset-bottom)); 
 }
 .piano {
   position: relative; user-select: none;
